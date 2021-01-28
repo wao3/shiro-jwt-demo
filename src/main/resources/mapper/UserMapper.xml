@@ -1,0 +1,41 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.github.wao3.shirojwtdemo.dao.UserMapper">
+
+    <resultMap id="userMap" type="com.github.wao3.shirojwtdemo.entity.User">
+        <result property="id" column="userid"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="salt" column="salt"/>
+        <collection property="roles" ofType="com.github.wao3.shirojwtdemo.entity.Role">
+            <result property="name" column="rolename"/>
+            <collection property="perms" ofType="com.github.wao3.shirojwtdemo.entity.Perm">
+                <result property="name" column="permname"/>
+                <result property="url" column="permurl"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <insert id="insertUser" parameterType="com.github.wao3.shirojwtdemo.entity.User" keyProperty="id" useGeneratedKeys="true">
+        insert into user(username, password, salt) values (#{username}, #{password}, #{salt})
+    </insert>
+
+    <select id="selectByUserName" resultType="com.github.wao3.shirojwtdemo.entity.User" resultMap="userMap">
+        select
+            user.id as userid,
+            username,
+            password,
+            salt,
+            role.name as rolename,
+            perm.name as permname,
+            perm.url as permurl
+        from user
+        left join user_role on user.id = user_role.userid
+        left join role on user_role.roleid = role.id
+        left join role_perm on role.id = role_perm.roleid
+        left join perm on role_perm.permid = perm.id
+        where username = #{username}
+    </select>
+</mapper>
